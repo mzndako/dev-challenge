@@ -5,22 +5,6 @@ A User of our platform.
 // DONE: 1. would be awesome to include the Address type so we can return users Address info.
 // DONE: 3. adding in a Company field to return the Users full company data would be great.  This will require adding a resolver as well.
 """
-type Address {
-  zipCode: String!
-  city: String!
-  cityPrefix: String
-  citySuffix: String
-  streetName: String!
-  streetAddress: String!
-  streetSuffix: String
-  streetPrefix: String
-  secondaryAddress: String
-  county: String
-  country: String!
-  state: String!
-  latitude: String
-  longitude: String
-}
 
 type User {
   id: ID!

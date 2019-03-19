@@ -1,0 +1,19 @@
+"""
+Address Type for both company and user
+"""
+type Address {
+  zipCode: String!
+  city: String!
+  cityPrefix: String
+  citySuffix: String
+  streetName: String!
+  streetAddress: String!
+  streetSuffix: String
+  streetPrefix: String
+  secondaryAddress: String
+  county: String
+  country: String!
+  state: String!
+  latitude: String
+  longitude: String
+}

@@ -20,9 +20,11 @@ export default {
   company: async (root, args, { ctx }, info) => {
     
     if(!root.company){
+      // Return null if the company is null
       return null;
     }
-
+    
+    // Fetch the company using the company id
     return getCompany(root.company); 
   }
 };

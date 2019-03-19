@@ -6,10 +6,12 @@ import {
   ActivityIndicator,
   Image,
   ScrollView,
-  Button
+  Button,
+  TextInput
 } from 'react-native';
 import { gql } from 'apollo-boost';
-import { Query } from 'react-apollo';
+import { ApolloProvider, graphql, Mutation, Query } from 'react-apollo';
+
 
 const styles = StyleSheet.create({
   imageWrapper: {
@@ -36,8 +38,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   paragraph: {
-    margin: 2,
-    fontSize: 15,
+    margin: 10,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center'
   },
@@ -65,26 +67,44 @@ const query = gql`
         name
         email
       }
+      company {
+        id
+        name
+      }
     }
+  }
+`;
+
+const updateUser = gql`
+  mutation updateUser($id: ID!, $name: String!, $email: String!) {
+    updateUser(user: { id: $id, name: $name, email: $email })
   }
 `;
 
 
 export default class UserScene extends PureComponent {
+  constructor(props){
+    super(props)
+    this.state = {
+      name: "",
+      email: "",
+      id: ""
+    }
+  }
   render() {
     const { navigation } = this.props;
     const id = navigation.getParam('id');
 
     // DONE: 2. would be cool if we actually displayed full user data that is contained in the user data object.
 
-    // todo: 3. would be extra cool to include their company info, and if you tap on it you can go that CompanyScene.
+    // DONE: 3. would be extra cool to include their company info, and if you tap on it you can go that CompanyScene.
     // if this is done correctly, we should be re-using components from the CompaniesScene.
 
     // DONE: 4. would be even cooler to see a list of their friends, so I can tap on them an get more info about that user.
-    // todo: 5 would be cool to make the user name and ema\il updateable and saved ot the database, so we can let our users change their info.
+    // DONE: 5 would be cool to make the user name and ema\il updateable and saved ot the database, so we can let our users change their info.
     return (
         <Query query={query} variables={{id}}>
-          {({ loading, error, data }) => {
+          {({ loading, error, data, refresh }) => {
             if (loading) {
               return <ActivityIndicator />;
             }
@@ -94,21 +114,62 @@ export default class UserScene extends PureComponent {
             }
 
            let user = data.user;
+           if(this.state.id != user.id){
+             this.setState({email: user.email, name: user.name, id: user.id})
+           }
             return (
               <ScrollView contentContainerStyle={[styles.scrollView, {backgroundColor: user.color}]}>
                 <View style={styles.format}>
                 <View style={[styles.imageWrapper, { borderColor: user.color }]}>
                   <Image style={styles.image} source={{ uri: user.image }} />
                 </View>
-                <Text>{user.name}</Text>
-                <Text>{user.email}</Text>
-                <Text style={[styles.paragraph, {marginTop: 10, fontSize: 20}]}>FRIENDS</Text>
+                <Text>{this.state.name}</Text>
+                <Text>{this.state.email}</Text>
+                {user.company ? (
+                  <Text style={styles.bold} onPress={()=>navigation.navigate('CompanyScene', { id: user.company.id })}>Company: {user.company.name}</Text>
+                ): <Text></Text>}
+                <Text style={[styles.paragraph]}>FRIENDS</Text>
                   {
                     user.friends.map((friend, key) => {
                       return <View style={styles.space} key={key}><Button  key={key} onPress={()=>navigation.navigate('UserScene', { id: friend.id })} title={friend.name}></Button></View>
                       
                     })
                   }
+                <Text style={[styles.paragraph, {marginTop: 10, fontSize: 20}]}>UPDATE USER DETAIL</Text>
+                <Mutation mutation={updateUser} refetchQueries={[{ query: query }]}>
+                {(sendUpdates, {data}) => (
+                <View>
+                    <TextInput
+                    style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+                    onChangeText={(text) => this.setState({name: text})}
+                    value={this.state.name}
+                    />
+
+                    <TextInput
+                    style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+                    onChangeText={(text) => this.setState({email: text})}
+                    value={this.state.email}
+                    />  
+                    <Button
+                      onPress={() => {
+                        sendUpdates({
+                          variables: {
+                            email: this.state.email,
+                            name: this.state.name,
+                            id: user.id
+                          }
+                        })
+                          .then(res => {
+                            alert("Successfully Updated")
+                            refresh();
+                          })
+                          .catch();
+                      }}
+                      title="Update"
+                    />
+                </View>
+                )}
+                </Mutation>
                 </View>
             </ScrollView>
             )

@@ -1,14 +1,15 @@
-import { setUser } from '../../../helpers';
-import getUser from '../../../helpers/getUser';
+import { setUser, getUser, getAllUsers } from '../../../helpers';
 
 export default async function User(root, { user }, { ctx }, info) {
   // DONE: 1 this throws a unfriendly (and potentially unsafe) error if a non-existnant user ID is entered.
   // how can we check for a non-existing user id and throw a more friendly error.
   
   let userDetails = await getUser(user.id);
+  
   if(user.name){
     userDetails.name = user.name;
   }
+
   if(user.email){
     userDetails.email = user.email;
   }
@@ -16,8 +17,9 @@ export default async function User(root, { user }, { ctx }, info) {
   // updated rather than overwritting all the data.
 
   await setUser(userDetails);
-  // }catch(error){
-    // return false;
-  // }
+  
+  // Clear any user cache previous set
+  await getAllUsers(true);
+
   return true;
 }

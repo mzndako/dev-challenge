@@ -54,8 +54,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontWeight: '800',
-    fontSize: 20,
-    color: '#fffff'
+    fontSize: 20
   }
 });
 

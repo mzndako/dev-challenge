@@ -29,7 +29,8 @@
     "graphql": "^14.1.1",
     "koa": "^2.7.0",
     "request-promise-native": "^1.0.7",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "uuid-base62": "^0.1.0"
   },
   "scripts": {
     "setup": "babel-node setup/index.js",

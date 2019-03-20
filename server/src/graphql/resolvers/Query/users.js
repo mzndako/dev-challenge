@@ -1,5 +1,6 @@
 import fs from 'fs';
 import util from 'util';
+import uuidBase62 from 'uuid-base62';
 
 const readDir = util.promisify(fs.readdir);
 
@@ -19,7 +20,12 @@ export default async function users(root, args, { ctx }, info) {
   let queryFields = Object.keys(args);
 
   queryFields.map(key => {
-    users = users.filter(user => user[key] === args[key])
+    let value = args[key];
+    // Convert query id (base62) back to base16
+    if (key === 'id'){
+      value = uuidBase62.decode(value);
+    }
+    users = users.filter(user => user[key] === value)
   })
 
   return users;

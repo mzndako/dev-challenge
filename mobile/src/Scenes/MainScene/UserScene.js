@@ -51,6 +51,11 @@ const styles = StyleSheet.create({
   },
   space: {
     margin: 8
+  },
+  heading: {
+    fontWeight: '800',
+    fontSize: 20,
+    color: '#fffff'
   }
 });
 
@@ -65,7 +70,6 @@ const query = gql`
       friends {
         id
         name
-        email
       }
       company {
         id
@@ -88,7 +92,8 @@ export default class UserScene extends PureComponent {
     this.state = {
       name: "",
       email: "",
-      id: ""
+      id: "",
+      editable: false
     }
   }
   render() {
@@ -115,11 +120,12 @@ export default class UserScene extends PureComponent {
 
            let user = data.user;
            if(this.state.id != user.id){
-             this.setState({email: user.email, name: user.name, id: user.id})
+             this.setState({email: user.email, name: user.name, id: user.id, editable: false})
            }
             return (
               <ScrollView contentContainerStyle={[styles.scrollView, {backgroundColor: user.color}]}>
                 <View style={styles.format}>
+                <Text style={styles.heading}>USER DETAILS</Text>
                 <View style={[styles.imageWrapper, { borderColor: user.color }]}>
                   <Image style={styles.image} source={{ uri: user.image }} />
                 </View>
@@ -128,48 +134,59 @@ export default class UserScene extends PureComponent {
                 {user.company ? (
                   <Text style={styles.bold} onPress={()=>navigation.navigate('CompanyScene', { id: user.company.id })}>Company: {user.company.name}</Text>
                 ): <Text></Text>}
-                <Text style={[styles.paragraph]}>FRIENDS</Text>
+                {
+                  user.friends.length === 0 ? <Text></Text> : <Text style={[styles.paragraph]}>FRIENDS</Text>
+                }
+                
                   {
                     user.friends.map((friend, key) => {
                       return <View style={styles.space} key={key}><Button  key={key} onPress={()=>navigation.navigate('UserScene', { id: friend.id })} title={friend.name}></Button></View>
                       
                     })
                   }
-                <Text style={[styles.paragraph, {marginTop: 10, fontSize: 20}]}>UPDATE USER DETAIL</Text>
-                <Mutation mutation={updateUser} refetchQueries={[{ query: query }]}>
-                {(sendUpdates, {data}) => (
-                <View>
-                    <TextInput
-                    style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-                    onChangeText={(text) => this.setState({name: text})}
-                    value={this.state.name}
-                    />
 
-                    <TextInput
-                    style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-                    onChangeText={(text) => this.setState({email: text})}
-                    value={this.state.email}
-                    />  
-                    <Button
-                      onPress={() => {
-                        sendUpdates({
-                          variables: {
-                            email: this.state.email,
-                            name: this.state.name,
-                            id: user.id
-                          }
-                        })
-                          .then(res => {
-                            alert("Successfully Updated")
-                            refresh();
-                          })
-                          .catch();
-                      }}
-                      title="Update"
-                    />
-                </View>
-                )}
-                </Mutation>
+                {
+                  !this.state.editable?
+                    <View style={{marginTop: 30}}><Button onPress={()=>this.setState({editable: true})} color='red'  title="Edit"></Button></View>
+                    :
+                    <View>
+                      <Text style={[styles.paragraph, {marginTop: 10, fontSize: 15}]}>UPDATE USER DETAIL</Text>
+                      <Mutation mutation={updateUser} refetchQueries={[{ query: query }]}>
+                      {(sendUpdates, {data}) => (
+                      <View>
+                          <TextInput
+                          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+                          onChangeText={(text) => this.setState({name: text})}
+                          value={this.state.name}
+                          />
+
+                          <TextInput
+                          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+                          onChangeText={(text) => this.setState({email: text})}
+                          value={this.state.email}
+                          />  
+                          <Button
+                            onPress={() => {
+                              sendUpdates({
+                                variables: {
+                                  email: this.state.email,
+                                  name: this.state.name,
+                                  id: user.id
+                                }
+                              })
+                                .then(res => {
+                                  alert("Successfully Updated")
+                                  refresh();
+                                })
+                                .catch();
+                            }}
+                            title="Save"
+                          />
+                      </View>
+                      )}
+                      </Mutation>
+                    </View>
+                }  
                 </View>
             </ScrollView>
             )
